@@ -39,22 +39,21 @@ queue_t *q_new()
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
-    /* How about freeing the list elements and the strings? */
-    /* Free queue structure */
-    list_ele_t *remove_ele;  //暫存準備要移掉的element
-    if (q) {                 // 如果有q存在
-        if (!q->head) {
-            free(q);  // 如果q是空的
-        } else {
-            while (q->head) {
-                remove_ele = q->head;     //先把要移掉的位址暫存起來
-                q->head = q->head->next;  //更新當前的頭指到的地方
-                free(remove_ele->value);  //把字串空間free掉
-                free(remove_ele);         //把element本身的空間free掉
-            }
-            free(q);
-        }
+    if (!q)
+        return;
+
+    if (!q->head) {
+        free(q);
+        return;
     }
+
+    while (q->head) {
+        list_ele_t *remove_ele = q->head;
+        q->head = q->head->next;
+        free(remove_ele->value);
+        free(remove_ele);
+    }
+    free(q);
 }
 
 /*
