@@ -17,6 +17,7 @@
 
 #include "harness.h"
 #include "queue.h"
+#define min(a, b) (((a) < (b)) ? (a) : (b))
 
 /*
   Create empty queue.
@@ -83,6 +84,7 @@ bool q_insert_head(queue_t *q, char *s)
     }
     strcpy(newh->value, s);
     if (!q->head) {
+        newh->next = NULL;
         q->head = newh;
         q->tail = newh;
     } else {
@@ -119,15 +121,15 @@ bool q_insert_tail(queue_t *q, char *s)
         return false;
     }
     strcpy(newh->value, s);
+    newh->next = NULL;
     if (!q->head) {
         q->head = newh;
         q->tail = newh;
     } else {
-        newh->next = NULL;
         q->tail->next = newh;
         q->tail = newh;
     }
-    q->size--;
+    q->size++;
     return true;
 }
 
@@ -146,13 +148,14 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
         return false;
     list_ele_t *head = q->head;
     if (sp && head->value) {
-        size_t len = strlen(head->value);
-        memcpy(sp, head->value, min(len, bufsize - 1));
+        size_t len = min(strlen(head->value), bufsize - 1);
+        memcpy(sp, head->value, len);
         sp[len] = '\0';
     }
+    q->head = q->head->next;
     free(head->value);
     free(head);
-    q->head = q->head->next;
+    q->size--;
     return true;
 }
 
@@ -178,5 +181,21 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
+    if (q && q->head) {
+        list_ele_t *pre = q->head;
+        list_ele_t *current = q->head->next;
+        list_ele_t *next;
+        list_ele_t *temp;
+        while (current) {
+            next = current->next;
+            current->next = pre;
+            pre = current;
+            current = next;
+        }
+        q->head->next = NULL;
+        temp = q->head;
+        q->head = q->tail;
+        q->tail = temp;
+    }
     /* You need to write the code for this function */
 }
