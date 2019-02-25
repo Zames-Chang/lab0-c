@@ -35,12 +35,26 @@ queue_t *q_new()
     return q;
 }
 
+
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
     /* How about freeing the list elements and the strings? */
     /* Free queue structure */
-    free(q);
+    list_ele_t *remove_ele;
+    if (q) {
+        if (!q->head) {
+            free(q);
+        } else {
+            while (q->head) {
+                remove_ele = q->head;
+                q->head = q->head->next;
+                free(remove_ele->value);
+                free(remove_ele);
+            }
+            free(q);
+        }
+    }
 }
 
 /*
@@ -53,12 +67,30 @@ void q_free(queue_t *q)
 bool q_insert_head(queue_t *q, char *s)
 {
     list_ele_t *newh;
+    size_t size;
+    if (!q)
+        return false;
     /* What should you do if the q is NULL? */
     newh = malloc(sizeof(list_ele_t));
     /* Don't forget to allocate space for the string and copy it */
     /* What if either call to malloc returns NULL? */
-    newh->next = q->head;
-    q->head = newh;
+    if (!newh)
+        return false;
+    size = (size_t) strlen(s) + 1;
+    newh->value = (char *) malloc(size);
+    if (!newh->value) {
+        free(newh);
+        return false;
+    }
+    strcpy(newh->value, s);
+    if (!q->head) {
+        q->head = newh;
+        q->tail = newh;
+    } else {
+        newh->next = q->head;
+        q->head = newh;
+    }
+    q->size++;
     return true;
 }
 
@@ -74,7 +106,30 @@ bool q_insert_tail(queue_t *q, char *s)
 {
     /* You need to write the complete code for this function */
     /* Remember: It should operate in O(1) time */
-    return false;
+    list_ele_t *newh;
+    size_t size;
+    if (!q)
+        return false;
+    newh = malloc(sizeof(list_ele_t));
+    if (!newh)
+        return false;
+    size = (size_t) strlen(s) + 1;
+    newh->value = (char *) malloc(size);
+    if (!newh->value) {
+        free(newh);
+        return false;
+    }
+    strcpy(newh->value, s);
+    if (!q->head) {
+        q->head = newh;
+        q->tail = newh;
+    } else {
+        newh->next = NULL;
+        q->tail->next = newh;
+        q->tail = newh;
+    }
+    q->size--;
+    return true;
 }
 
 /*
@@ -85,10 +140,28 @@ bool q_insert_tail(queue_t *q, char *s)
   (up to a maximum of bufsize-1 characters, plus a null terminator.)
   The space used by the list element and the string should be freed.
 */
+void remove_element_and_save(list_ele_t *remove_ele, char *sp, size_t bufsize)
+{
+    strncpy(sp, remove_ele->value, bufsize);
+    free(remove_ele->value);
+    free(remove_ele);
+}
+
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
+    list_ele_t *remove_ele;
     /* You need to fix up this code. */
-    q->head = q->head->next;
+    if (!(q || q->head))
+        return false;
+    remove_ele = q->head;
+    if (q->head == q->tail) {
+        q->head = NULL;
+        q->tail = NULL;
+    } else {
+        q->head = q->head->next;
+    }
+    remove_element_and_save(remove_ele, sp, bufsize);
+    q->size--;
     return true;
 }
 
@@ -100,7 +173,9 @@ int q_size(queue_t *q)
 {
     /* You need to write the code for this function */
     /* Remember: It should operate in O(1) time */
-    return 0;
+    if (!q)
+        return 0;
+    return q->size;
 }
 
 /*
