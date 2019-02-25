@@ -41,16 +41,16 @@ void q_free(queue_t *q)
 {
     /* How about freeing the list elements and the strings? */
     /* Free queue structure */
-    list_ele_t *remove_ele;
-    if (q) {
+    list_ele_t *remove_ele;  //暫存準備要移掉的element
+    if (q) {                 // 如果有q存在
         if (!q->head) {
-            free(q);
+            free(q);  // 如果q是空的
         } else {
             while (q->head) {
-                remove_ele = q->head;
-                q->head = q->head->next;
-                free(remove_ele->value);
-                free(remove_ele);
+                remove_ele = q->head;     //先把要移掉的位址暫存起來
+                q->head = q->head->next;  //更新當前的頭指到的地方
+                free(remove_ele->value);  //把字串空間free掉
+                free(remove_ele);         //把element本身的空間free掉
             }
             free(q);
         }
@@ -140,33 +140,25 @@ bool q_insert_tail(queue_t *q, char *s)
   (up to a maximum of bufsize-1 characters, plus a null terminator.)
   The space used by the list element and the string should be freed.
 */
-void remove_element_and_save(list_ele_t *remove_ele, char *sp, size_t bufsize)
-{
-    strncpy(sp, remove_ele->value, bufsize);
-    free(remove_ele->value);
-    free(remove_ele);
-}
 
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
-    list_ele_t *remove_ele;
-    /* You need to fix up this code. */
-    if (!(q || q->head))
+    if (!q || !q->head)
         return false;
-    remove_ele = q->head;
-    if (q->head == q->tail) {
-        q->head = NULL;
-        q->tail = NULL;
-    } else {
-        q->head = q->head->next;
+    list_ele_t *head = q->head;
+    if (sp && head->value) {
+        size_t len = strlen(head->value);
+        memcpy(sp, head->value, min(len, bufsize - 1));
+        sp[len] = '\0';
     }
-    remove_element_and_save(remove_ele, sp, bufsize);
-    q->size--;
+    free(head->value);
+    free(head);
+    q->head = q->head->next;
     return true;
 }
 
 /*
-  Return number of elements in queue.
+  Return number of elements in queueㄎ
   Return 0 if q is NULL or empty
  */
 int q_size(queue_t *q)
