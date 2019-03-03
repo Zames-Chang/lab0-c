@@ -90,3 +90,4 @@ int q_size(queue_t *q);
   It should rearrange the existing ones.
  */
 void q_reverse(queue_t *q);
+void my_merge_sort(queue_t *q);
