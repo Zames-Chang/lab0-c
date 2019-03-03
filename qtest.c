@@ -61,6 +61,7 @@ bool do_remove_head_quiet(int argc, char *argv[]);
 bool do_reverse(int argc, char *argv[]);
 bool do_size(int argc, char *argv[]);
 bool do_show(int argc, char *argv[]);
+bool do_sort(int argc, char *argv[]);
 
 static void queue_init();
 
@@ -84,12 +85,29 @@ static void console_init()
     add_cmd("size", do_size,
             " [n]            | Compute queue size n times (default: n == 1)");
     add_cmd("show", do_show, "                | Show queue contents");
+    add_cmd("sort", do_sort, "                | Merge sort queue contents");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
               NULL);
     add_param("fail", &fail_limit,
               "Number of times allow queue operations to return false", NULL);
+}
+
+bool do_sort(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+    error_check();
+    set_noallocate_mode(true);
+    if (exception_setup(true))
+        my_merge_sort(q);
+    exception_cancel();
+    set_noallocate_mode(false);
+    show_queue(3);
+    return !error_check();
 }
 
 bool do_new(int argc, char *argv[])
