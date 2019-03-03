@@ -199,3 +199,121 @@ void q_reverse(queue_t *q)
     }
     /* You need to write the code for this function */
 }
+
+void print_list(list_ele_t *head)
+{
+    while (head) {
+        printf("%s ", head->value);
+        head = head->next;
+    }
+    printf("\n");
+}
+/**
+ * get_mid - get mid element of link list
+ * @head: pointer to queue first element
+ *
+ * @Return: pointer to mid of link list
+ */
+list_ele_t *get_mid(list_ele_t *head)
+{
+    int i = 0;
+    list_ele_t *des = head;
+    while (head) {
+        head = head->next;
+        i++;
+    }
+    for (int j = 0; j < i / 2 - 1; j++)
+        des = des->next;
+    return des;
+}
+/**
+ * insert_tail - insert node_2 in tail of node_1
+ * @node_1: pointer element
+ * @node_1: pointer element
+ *
+ */
+void insert_tail(list_ele_t *node_1, list_ele_t *node_2)
+{
+    if (node_1 && node_2) {
+        list_ele_t *temp = node_1->next;
+        node_1->next = node_2;
+        node_2->next = temp;
+    }
+}
+/**
+ * sort_merge - merge two sorted link list
+ * @head1: pointer to first sorted link list
+ * @head2: pointer to second sorted link list
+ *
+ * @Return: pointer to merged link list head
+ */
+list_ele_t *sort_merge(list_ele_t *head1, list_ele_t *head2)
+{
+    if (head1 && head2) {
+        if (*(head1->value) > *(head2->value)) {
+            list_ele_t *tmp = head2;
+            head2 = head1;
+            head1 = tmp;
+        }
+    } else {
+        return head1 ? head1 : head2;
+    }
+    list_ele_t *org_head = head1;
+    while (head2) {
+        if (head1) {
+            if (head1->next == NULL) {
+                head1->next = head2;
+                break;
+            } else if (*(head1->value) < *(head2->value) &&
+                       *(head1->next->value) > *(head2->value)) {
+                list_ele_t *item = head2;
+                head2 = head2->next;
+                insert_tail(head1, item);
+            } else {
+                head1 = head1->next;
+            }
+        }
+    }
+    return org_head;
+}
+/**
+ * spice_half - cut link list into half
+ * @head: pointer to queue first element
+ *
+ * @Return: half of remaining link list
+ * e.g. a->b->c->d splice into a->b,c->d and return pointer to c
+ */
+list_ele_t *spice_half(list_ele_t *head)
+{
+    if (head) {
+        list_ele_t *mid = get_mid(head);
+        list_ele_t *next_start = mid->next;
+        mid->next = NULL;
+        return next_start;
+    } else
+        return head;
+}
+/**
+ * merge_sort - using merge sort to sort queue
+ * @head: pointer to queue first element
+ *
+ * queue element must be a single char
+ * @Return :pointer to sorted link list head;
+ */
+list_ele_t *merge_sort(list_ele_t *head)
+{
+    if (head && head->next) {
+        list_ele_t *mid = spice_half(head);
+        head = merge_sort(head);
+        mid = merge_sort(mid);
+        list_ele_t *result = sort_merge(head, mid);
+        return result;
+    } else {
+        return head;
+    }
+}
+
+void my_merge_sort(queue_t *q)
+{
+    q->head = merge_sort(q->head);
+}
